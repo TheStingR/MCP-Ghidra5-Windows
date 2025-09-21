@@ -71,7 +71,7 @@ COPY tests/windows-docker/run-windows-tests.ps1 /mcp-ghidra5/run-windows-tests.p
 RUN Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
 
 # Create test user (non-admin for testing)
-RUN $password = ConvertTo-SecureString 'TestPass123!' -AsPlainText -Force; \
+RUN $password = ConvertTo-SecureString '[REDACTED_FOR_SECURITY]' -AsPlainText -Force; \
     New-LocalUser -Name 'testuser' -Password $password -Description 'Test user for MCP Ghidra5' -PasswordNeverExpires
 
 # Install Windows features needed for services
