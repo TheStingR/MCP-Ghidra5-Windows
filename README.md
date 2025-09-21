@@ -364,3 +364,4 @@ If **MCP-Ghidra5-Windows** helps your Windows security research, please **⭐ st
 [![GitHub stars](https://img.shields.io/github/stars/TheStingR/MCP-Ghidra5-Windows?style=social)](https://github.com/TheStingR/MCP-Ghidra5-Windows/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/TheStingR/MCP-Ghidra5-Windows?style=social)](https://github.com/TheStingR/MCP-Ghidra5-Windows/network/members)
 [![GitHub issues](https://img.shields.io/github/issues/TheStingR/MCP-Ghidra5-Windows?style=social)](https://github.com/TheStingR/MCP-Ghidra5-Windows/issues)
+<!-- Contributors update trigger: Sun Sep 21 03:18:58 PM EDT 2025 -->
