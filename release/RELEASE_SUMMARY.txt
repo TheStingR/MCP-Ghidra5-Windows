@@ -1,0 +1,24 @@
+MCP-Ghidra5 Windows v1.0.0 - Release Summary
+================================================
+
+Release Date: Sun Sep 21 12:49:28 PM EDT 2025
+Total Packages: 4
+Platform: Windows x64
+
+Package Details:
+  - MCP-Ghidra5-Windows-Deploy-Ready-v1.0.0.tar.gz (121K)
+  - MCP-Ghidra5-Windows-Source-v1.0.0.tar.gz (98K)
+  - MCP-Ghidra5-Windows-Documentation-v1.0.0.zip (17K)
+  - MCP-Ghidra5-Windows-Installer-Components-v1.0.0.zip (181K)
+
+Installation:
+  1. Download appropriate package for your use case
+  2. Verify checksums (checksums.sha256)
+  3. Follow deployment instructions in RELEASE_NOTES.md
+
+Support:
+  - Documentation: Complete guides included
+  - Issues: GitHub issue tracker
+  - Validation: Built-in test suites
+
+Status: Production Ready ✅

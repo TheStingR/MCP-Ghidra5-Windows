@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+TechSquad MCP Ghidra5 - Bundle Project File
+MSBuild configuration for bootstrapper compilation
+
+Copyright (c) 2024 TechSquad Inc. - All Rights Reserved
+-->
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProductVersion>3.10</ProductVersion>
+    <ProjectGuid>12345678-1234-1234-1234-123456789016</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName>TechSquadMCPGhidra5Setup</OutputName>
+    <OutputType>Bundle</OutputType>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+  </PropertyGroup>
+  
+  <!-- Configuration Properties -->
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <IntermediateOutputPath>obj\Debug\</IntermediateOutputPath>
+    <DefineConstants>Debug</DefineConstants>
+    <Cultures>en-US</Cultures>
+    <LinkerPedantic>False</LinkerPedantic>
+    <SuppressValidation>False</SuppressValidation>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <Verbose>True</Verbose>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <IntermediateOutputPath>obj\Release\</IntermediateOutputPath>
+    <DefineConstants>Release</DefineConstants>
+    <Cultures>en-US</Cultures>
+    <LinkerPedantic>True</LinkerPedantic>
+    <SuppressValidation>False</SuppressValidation>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <Verbose>False</Verbose>
+  </PropertyGroup>
+
+  <!-- Version Information -->
+  <PropertyGroup>
+    <BundleVersion>2.0.0.0</BundleVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <ProductName>TechSquad MCP Ghidra5 Server</ProductName>
+    <Manufacturer>TechSquad Inc.</Manufacturer>
+    <Copyright>© 2024 TechSquad Inc. All rights reserved.</Copyright>
+    <Description>Enterprise setup for AI-powered reverse engineering server</Description>
+  </PropertyGroup>
+
+  <!-- Source Files -->
+  <ItemGroup>
+    <Compile Include="Bundle.wxs" />
+  </ItemGroup>
+
+  <!-- Content Files -->
+  <ItemGroup>
+    <Content Include="assets\License.rtf" />
+    <Content Include="assets\TechSquadIcon.ico" />
+    <Content Include="assets\TechSquadLogo.png" />
+    <Content Include="assets\TechSquadBanner.png" />
+    <Content Include="assets\TechSquadTheme.xml" />
+    <Content Include="assets\TechSquadStrings.wxl" />
+  </ItemGroup>
+
+  <!-- Bundle Dependencies -->
+  <ItemGroup>
+    <ProjectReference Include="TechSquadMCPGhidra5.wixproj">
+      <Name>TechSquadMCPGhidra5</Name>
+      <Project>{12345678-1234-1234-1234-123456789014}</Project>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- WiX Extensions -->
+  <ItemGroup>
+    <WixExtension Include="WixBalExtension">
+      <HintPath>$(WixExtDir)\WixBalExtension.dll</HintPath>
+      <Name>WixBalExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
+      <Name>WixNetFxExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixTagExtension">
+      <HintPath>$(WixExtDir)\WixTagExtension.dll</HintPath>
+      <Name>WixTagExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+
+  <!-- Preprocessor Variables -->
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);
+      BundleVersion=$(BundleVersion);
+      FileVersion=$(FileVersion);
+      ProductName=$(ProductName);
+      Manufacturer=$(Manufacturer);
+      Copyright=$(Copyright);
+      Description=$(Description);
+    </DefineConstants>
+  </PropertyGroup>
+
+  <!-- Build Events -->
+  <PropertyGroup>
+    <PreBuildEvent>
+      REM Ensure MSI is built first
+      if exist "$(ProjectDir)TechSquadMCPGhidra5.wixproj" (
+        msbuild "$(ProjectDir)TechSquadMCPGhidra5.wixproj" /p:Configuration=$(Configuration) /p:Platform=$(Platform)
+      )
+      
+      REM Copy MSI to bundle directory
+      if exist "$(ProjectDir)bin\$(Configuration)\TechSquadMCPGhidra5.msi" (
+        copy "$(ProjectDir)bin\$(Configuration)\TechSquadMCPGhidra5.msi" "$(IntermediateOutputPath)"
+      )
+    </PreBuildEvent>
+    
+    <PostBuildEvent>
+      REM Sign the Bundle executable
+      if exist "$(WIX)bin\signtool.exe" (
+        "$(WIX)bin\signtool.exe" sign /f "$(ProjectDir)certificates\TechSquadCodeSign.pfx" /p "$(CODESIGN_PASSWORD)" /t http://timestamp.digicert.com /d "TechSquad MCP Ghidra5 Setup" "$(TargetPath)"
+      )
+      
+      REM Create SHA256 checksum for bundle
+      CertUtil -hashfile "$(TargetPath)" SHA256 > "$(TargetDir)$(TargetName).sha256"
+      
+      REM Copy to distribution folder
+      if not exist "$(ProjectDir)..\dist\" mkdir "$(ProjectDir)..\dist\"
+      copy "$(TargetPath)" "$(ProjectDir)..\dist\"
+      copy "$(TargetDir)$(TargetName).sha256" "$(ProjectDir)..\dist\"
+      
+      REM Create deployment package
+      if exist "$(WIX)bin\burn.exe" (
+        powershell -ExecutionPolicy Bypass -File "$(ProjectDir)scripts\Create-DeploymentPackage.ps1" -SetupPath "$(TargetPath)" -OutputPath "$(ProjectDir)..\dist\"
+      )
+    </PostBuildEvent>
+  </PropertyGroup>
+
+  <!-- Conditional Build Tasks -->
+  <Target Name="EnsureWixToolsetInstalled">
+    <Error Condition="!Exists('$(WixTargetsPath)')" Text="The WiX Toolset v3.11 or newer build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+  </Target>
+
+  <!-- Custom Build Validation -->
+  <Target Name="ValidateBundleAssets" BeforeTargets="Build">
+    <Error Condition="!Exists('$(ProjectDir)assets\License.rtf')" Text="Missing required license file: License.rtf" />
+    <Error Condition="!Exists('$(ProjectDir)assets\TechSquadIcon.ico')" Text="Missing required icon file: TechSquadIcon.ico" />
+    <Error Condition="!Exists('$(ProjectDir)assets\TechSquadTheme.xml')" Text="Missing required theme file: TechSquadTheme.xml" />
+  </Target>
+
+  <!-- Bundle Signing Configuration -->
+  <PropertyGroup>
+    <SignBundle Condition="'$(CODESIGN_PASSWORD)' != ''">true</SignBundle>
+    <SignBundle Condition="'$(CODESIGN_PASSWORD)' == ''">false</SignBundle>
+  </PropertyGroup>
+
+  <!-- Localization Support -->
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\en-US\TechSquadBundle.wxl" />
+    <EmbeddedResource Include="Localization\es-ES\TechSquadBundle.wxl" />
+    <EmbeddedResource Include="Localization\fr-FR\TechSquadBundle.wxl" />
+  </ItemGroup>
+
+  <!-- Bundle Theme and Assets -->
+  <ItemGroup>
+    <None Include="assets\TechSquadTheme.xml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="assets\TechSquadStrings.wxl">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+
+  <!-- Import WiX Targets -->
+  <Import Project="$(WixTargetsPath)" Condition="Exists('$(WixTargetsPath)')" />
+
+  <!-- Custom Bundle Tasks -->
+  <Target Name="CreatePortablePackage" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <PortableDir>$(OutputPath)Portable\</PortableDir>
+    </PropertyGroup>
+    
+    <MakeDir Directories="$(PortableDir)" />
+    
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PortableDir)" />
+    <Copy SourceFiles="$(ProjectDir)..\README.md" DestinationFolder="$(PortableDir)" />
+    <Copy SourceFiles="$(ProjectDir)..\CHANGELOG.md" DestinationFolder="$(PortableDir)" />
+    
+    <Exec Command="powershell -ExecutionPolicy Bypass -Command &quot;Compress-Archive -Path '$(PortableDir)*' -DestinationPath '$(OutputPath)TechSquadMCPGhidra5-Portable.zip' -Force&quot;" />
+    
+    <Copy SourceFiles="$(OutputPath)TechSquadMCPGhidra5-Portable.zip" DestinationFolder="$(ProjectDir)..\dist\" />
+  </Target>
+
+  <!-- Deployment Package Creation -->
+  <Target Name="CreateMSITransforms" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="&quot;$(WIX)bin\torch.exe&quot; -p -xi &quot;$(ProjectDir)bin\$(Configuration)\TechSquadMCPGhidra5.msi&quot; &quot;$(ProjectDir)transforms\Enterprise.msi&quot; -out &quot;$(OutputPath)Enterprise.mst&quot;" ContinueOnError="true" />
+    <Exec Command="&quot;$(WIX)bin\torch.exe&quot; -p -xi &quot;$(ProjectDir)bin\$(Configuration)\TechSquadMCPGhidra5.msi&quot; &quot;$(ProjectDir)transforms\Custom.msi&quot; -out &quot;$(OutputPath)Custom.mst&quot;" ContinueOnError="true" />
+  </Target>
+  
+</Project>

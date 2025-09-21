@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+TechSquad MCP Ghidra5 - Windows Enterprise Installer
+WIX Toolset Configuration for Professional MSI Package
+
+Copyright (c) 2024 TechSquad Inc. - All Rights Reserved
+Author: TheStingR
+Version: 1.0.0
+-->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" 
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+     
+  <?define ProductName = "TechSquad MCP Ghidra5 Server" ?>
+  <?define ProductVersion = "1.0.0" ?>
+  <?define ProductManufacturer = "TechSquad Inc." ?>
+  <?define ProductGUID = "12345678-1234-1234-1234-123456789012" ?>
+  <?define UpgradeCode = "87654321-4321-4321-4321-210987654321" ?>
+  
+  <Product Id="$(var.ProductGUID)" 
+           Name="$(var.ProductName)" 
+           Language="1033" 
+           Version="$(var.ProductVersion)" 
+           Manufacturer="$(var.ProductManufacturer)" 
+           UpgradeCode="$(var.UpgradeCode)">
+           
+    <Package InstallerVersion="500" 
+             Compressed="yes" 
+             InstallScope="perMachine"
+             Platform="x64"
+             Description="$(var.ProductName) v$(var.ProductVersion)"
+             Comments="Advanced Reverse Engineering with AI Integration"
+             Manufacturer="$(var.ProductManufacturer)" />
+             
+    <!-- Upgrade logic -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    
+    <!-- Custom properties -->
+    <Property Id="INSTALLDIR" Value="C:\Program Files\TechSquad\MCP-Ghidra5" />
+    <Property Id="SERVERPORT" Value="8000" />
+    <Property Id="INSTALLSERVICE" Value="1" />
+    <Property Id="CREATEFIREWALLRULE" Value="1" />
+    <Property Id="ADDDEFENDEREXCLUSIONS" Value="1" />
+    <Property Id="GHIDRAPATH" Value="" />
+    
+    <!-- System requirements -->
+    <Condition Message="This application requires Windows 10 or later.">
+      <![CDATA[Installed OR VersionNT >= 1000]]>
+    </Condition>
+    
+    <Condition Message="This application requires a 64-bit operating system.">
+      <![CDATA[Installed OR VersionNT64]]>
+    </Condition>
+    
+    <Condition Message="Administrator privileges are required to install this application.">
+      <![CDATA[Installed OR Privileged]]>
+    </Condition>
+    
+    <!-- Media and source files -->
+    <MediaTemplate EmbedCab="yes" />
+    
+    <!-- Main feature -->
+    <Feature Id="MainFeature" Title="TechSquad MCP Ghidra5 Server" Level="1">
+      <ComponentRef Id="MainExecutables" />
+      <ComponentRef Id="Scripts" />
+      <ComponentRef Id="Documentation" />
+      <ComponentRef Id="RegistryEntries" />
+      <ComponentRef Id="WindowsService" />
+      <ComponentRef Id="StartMenuShortcuts" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+    
+    <!-- Optional features -->
+    <Feature Id="DeveloperTools" Title="Developer Tools &amp; SDK" Level="2">
+      <ComponentRef Id="DeveloperComponents" />
+    </Feature>
+    
+    <Feature Id="WindowsService" Title="Windows Service Mode" Level="1">
+      <ComponentRef Id="ServiceComponent" />
+    </Feature>
+    
+    <!-- Installation directory structure -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="TechSquadFolder" Name="TechSquad">
+          <Directory Id="INSTALLDIR" Name="MCP-Ghidra5">
+            <Directory Id="SrcDir" Name="src" />
+            <Directory Id="ScriptsDir" Name="scripts" />
+            <Directory Id="DocsDir" Name="docs" />
+            <Directory Id="LogsDir" Name="logs" />
+          </Directory>
+        </Directory>
+      </Directory>
+      
+      <!-- Program Data directory -->
+      <Directory Id="CommonAppDataFolder">
+        <Directory Id="TechSquadDataFolder" Name="TechSquad">
+          <Directory Id="MCPGhidraDataFolder" Name="MCP-Ghidra5">
+            <Directory Id="ConfigDir" Name="config" />
+            <Directory Id="DataLogsDir" Name="logs" />
+            <Directory Id="ProjectsDir" Name="projects" />
+          </Directory>
+        </Directory>
+      </Directory>
+      
+      <!-- Start Menu -->
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="TechSquadStartMenuFolder" Name="TechSquad Inc.">
+          <Directory Id="MCPGhidraStartMenuFolder" Name="MCP Ghidra5 Server" />
+        </Directory>
+      </Directory>
+      
+      <!-- Desktop -->
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+    
+    <!-- Main executable components -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="MainExecutables" Guid="11111111-1111-1111-1111-111111111111" Win64="yes">
+        <File Id="MainServerPy" Source="$(var.SourceDir)\src\mcp_ghidra_server_windows.py" 
+              Name="mcp_ghidra_server.py" KeyPath="yes" />
+        <File Id="ServiceWrapper" Source="$(var.SourceDir)\service_wrapper.py" />
+        <File Id="ConfigTemplate" Source="$(var.SourceDir)\config\server_config.json" />
+        
+        <!-- Environment variables -->
+        <Environment Id="TechSquadMCPPath" Name="TECHSQUAD_MCP_PATH" Value="[INSTALLDIR]" 
+                     System="yes" Action="set" Part="all" />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Scripts components -->
+    <DirectoryRef Id="ScriptsDir">
+      <Component Id="Scripts" Guid="22222222-2222-2222-2222-222222222222" Win64="yes">
+        <File Id="InstallScript" Source="$(var.SourceDir)\scripts\Install-TechSquadMCPGhidra5.ps1" />
+        <File Id="ConfigScript" Source="$(var.SourceDir)\scripts\Configure-TechSquadMCPGhidra5.ps1" />
+        <File Id="TestScript" Source="$(var.SourceDir)\scripts\Test-TechSquadMCPGhidra5.ps1" />
+        <File Id="UninstallScript" Source="$(var.SourceDir)\scripts\Uninstall-TechSquadMCPGhidra5.ps1" />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Documentation components -->
+    <DirectoryRef Id="DocsDir">
+      <Component Id="Documentation" Guid="33333333-3333-3333-3333-333333333333" Win64="yes">
+        <File Id="ReadmeFile" Source="$(var.SourceDir)\docs\README.md" />
+        <File Id="InstallGuide" Source="$(var.SourceDir)\docs\INSTALLATION_GUIDE.md" />
+        <File Id="UserManual" Source="$(var.SourceDir)\docs\USER_MANUAL.md" />
+        <File Id="APIReference" Source="$(var.SourceDir)\docs\API_REFERENCE.md" />
+        <File Id="TroubleshootingGuide" Source="$(var.SourceDir)\docs\TROUBLESHOOTING.md" />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Developer tools (optional feature) -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="DeveloperComponents" Guid="44444444-4444-4444-4444-444444444444" Win64="yes">
+        <File Id="SDKHeaders" Source="$(var.SourceDir)\sdk\mcp_client.h" />
+        <File Id="SDKLibrary" Source="$(var.SourceDir)\sdk\mcp_client.lib" />
+        <File Id="ExampleClient" Source="$(var.SourceDir)\examples\example_client.py" />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Registry entries -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="RegistryEntries" Guid="55555555-5555-5555-5555-555555555555" Win64="yes">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\TechSquad\MCP-Ghidra5">
+          <RegistryValue Name="InstallPath" Type="string" Value="[INSTALLDIR]" />
+          <RegistryValue Name="Version" Type="string" Value="$(var.ProductVersion)" />
+          <RegistryValue Name="Port" Type="integer" Value="[SERVERPORT]" />
+          <RegistryValue Name="InstallDate" Type="string" Value="[Date]" />
+          <RegistryValue Name="ProjectDirectory" Type="string" Value="[CommonAppDataFolder]TechSquad\MCP-Ghidra5\projects" />
+        </RegistryKey>
+        
+        <!-- Uninstall registry entries -->
+        <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(var.ProductGUID)">
+          <RegistryValue Name="DisplayName" Type="string" Value="$(var.ProductName)" />
+          <RegistryValue Name="DisplayVersion" Type="string" Value="$(var.ProductVersion)" />
+          <RegistryValue Name="Publisher" Type="string" Value="$(var.ProductManufacturer)" />
+          <RegistryValue Name="InstallLocation" Type="string" Value="[INSTALLDIR]" />
+          <RegistryValue Name="EstimatedSize" Type="integer" Value="204800" />
+          <RegistryValue Name="NoModify" Type="integer" Value="1" />
+          <RegistryValue Name="NoRepair" Type="integer" Value="1" />
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Windows Service -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="WindowsService" Guid="66666666-6666-6666-6666-666666666666" Win64="yes">
+        <Condition>INSTALLSERVICE = "1"</Condition>
+        
+        <ServiceInstall Id="TechSquadMCPGhidra5Service"
+                       Name="TechSquadMCPGhidra5"
+                       DisplayName="TechSquad MCP Ghidra5 Server"
+                       Description="Advanced reverse engineering server with AI integration"
+                       Type="ownProcess"
+                       Start="auto"
+                       Account="LocalSystem"
+                       ErrorControl="normal"
+                       Arguments='python.exe "[INSTALLDIR]service_wrapper.py"'
+                       Interactive="no" />
+                       
+        <ServiceControl Id="StartTechSquadService"
+                       Name="TechSquadMCPGhidra5"
+                       Start="install"
+                       Stop="both"
+                       Remove="uninstall"
+                       Wait="yes" />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Service component (separate for feature control) -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="ServiceComponent" Guid="77777777-7777-7777-7777-777777777777" Win64="yes">
+        <File Id="ServiceConfig" Source="$(var.SourceDir)\config\service_config.xml" />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Start Menu shortcuts -->
+    <DirectoryRef Id="MCPGhidraStartMenuFolder">
+      <Component Id="StartMenuShortcuts" Guid="88888888-8888-8888-8888-888888888888" Win64="yes">
+        <Shortcut Id="StartMenuTechSquadMCP"
+                 Name="TechSquad MCP Ghidra5 Server"
+                 Description="Start TechSquad MCP Ghidra5 Server"
+                 Target="python.exe"
+                 Arguments='"[INSTALLDIR]src\mcp_ghidra_server.py"'
+                 WorkingDirectory="INSTALLDIR"
+                 Icon="TechSquadIcon.exe" />
+                 
+        <Shortcut Id="StartMenuConfiguration"
+                 Name="Configuration Manager"
+                 Description="Configure TechSquad MCP Ghidra5 Server"
+                 Target="powershell.exe"
+                 Arguments='-ExecutionPolicy Bypass -File "[INSTALLDIR]scripts\Configure-TechSquadMCPGhidra5.ps1"'
+                 WorkingDirectory="INSTALLDIR" />
+                 
+        <Shortcut Id="StartMenuDocumentation"
+                 Name="Documentation"
+                 Description="TechSquad MCP Ghidra5 Documentation"
+                 Target="[INSTALLDIR]docs\README.md"
+                 WorkingDirectory="INSTALLDIR" />
+                 
+        <Shortcut Id="StartMenuUninstall"
+                 Name="Uninstall"
+                 Description="Uninstall TechSquad MCP Ghidra5 Server"
+                 Target="msiexec.exe"
+                 Arguments="/x $(var.ProductGUID)" />
+                 
+        <RemoveFolder Id="RemoveStartMenuFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveTechSquadStartMenuFolder" Directory="TechSquadStartMenuFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="SOFTWARE\TechSquad\MCP-Ghidra5" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Desktop shortcut -->
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="DesktopShortcut" Guid="99999999-9999-9999-9999-999999999999" Win64="yes">
+        <Shortcut Id="DesktopTechSquadMCP"
+                 Name="TechSquad MCP Ghidra5 Server"
+                 Description="TechSquad MCP Ghidra5 Server"
+                 Target="python.exe"
+                 Arguments='"[INSTALLDIR]src\mcp_ghidra_server.py"'
+                 WorkingDirectory="INSTALLDIR"
+                 Icon="TechSquadIcon.exe" />
+                 
+        <RegistryValue Root="HKCU" Key="SOFTWARE\TechSquad\MCP-Ghidra5" Name="desktop_shortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    
+    <!-- Icon -->
+    <Icon Id="TechSquadIcon.exe" SourceFile="$(var.SourceDir)\assets\techsquad_icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="TechSquadIcon.exe" />
+    
+    <!-- Custom actions -->
+    <Binary Id="TechSquadCustomActions" SourceFile="$(var.SourceDir)\installer\TechSquadCustomActions.CA.dll" />
+    
+    <!-- Ghidra detection custom action -->
+    <CustomAction Id="DetectGhidra" 
+                 BinaryKey="TechSquadCustomActions" 
+                 DllEntry="DetectGhidraInstallation" 
+                 Execute="immediate" 
+                 Return="check" />
+    
+    <!-- Python detection custom action -->
+    <CustomAction Id="DetectPython" 
+                 BinaryKey="TechSquadCustomActions" 
+                 DllEntry="DetectPythonInstallation" 
+                 Execute="immediate" 
+                 Return="check" />
+    
+    <!-- Firewall rule custom action -->
+    <CustomAction Id="CreateFirewallRule" 
+                 BinaryKey="TechSquadCustomActions" 
+                 DllEntry="CreateFirewallRule" 
+                 Execute="deferred" 
+                 Impersonate="no" 
+                 Return="check" />
+    
+    <!-- Windows Defender exclusions -->
+    <CustomAction Id="AddDefenderExclusions" 
+                 BinaryKey="TechSquadCustomActions" 
+                 DllEntry="AddWindowsDefenderExclusions" 
+                 Execute="deferred" 
+                 Impersonate="no" 
+                 Return="ignore" />
+    
+    <!-- Rollback actions -->
+    <CustomAction Id="RemoveFirewallRule" 
+                 BinaryKey="TechSquadCustomActions" 
+                 DllEntry="RemoveFirewallRule" 
+                 Execute="rollback" 
+                 Impersonate="no" />
+    
+    <CustomAction Id="RemoveDefenderExclusions" 
+                 BinaryKey="TechSquadCustomActions" 
+                 DllEntry="RemoveWindowsDefenderExclusions" 
+                 Execute="rollback" 
+                 Impersonate="no" />
+    
+    <!-- Installation sequence -->
+    <InstallExecuteSequence>
+      <!-- Pre-install validations -->
+      <Custom Action="DetectPython" Before="LaunchConditions">NOT Installed</Custom>
+      <Custom Action="DetectGhidra" After="DetectPython">NOT Installed</Custom>
+      
+      <!-- Post-install configurations -->
+      <Custom Action="CreateFirewallRule" After="InstallServices">
+        NOT Installed AND CREATEFIREWALLRULE = "1"
+      </Custom>
+      
+      <Custom Action="AddDefenderExclusions" After="CreateFirewallRule">
+        NOT Installed AND ADDDEFENDEREXCLUSIONS = "1"
+      </Custom>
+      
+      <!-- Rollback actions -->
+      <Custom Action="RemoveFirewallRule" Before="CreateFirewallRule">
+        NOT Installed AND CREATEFIREWALLRULE = "1"
+      </Custom>
+      
+      <Custom Action="RemoveDefenderExclusions" Before="AddDefenderExclusions">
+        NOT Installed AND ADDDEFENDEREXCLUSIONS = "1"
+      </Custom>
+    </InstallExecuteSequence>
+    
+    <!-- UI sequence -->
+    <InstallUISequence>
+      <Custom Action="DetectPython" Before="LaunchConditions">NOT Installed</Custom>
+      <Custom Action="DetectGhidra" After="DetectPython">NOT Installed</Custom>
+    </InstallUISequence>
+    
+    <!-- User Interface -->
+    <UIRef Id="TechSquadWixUI" />
+    
+    <!-- License -->
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.SourceDir)\installer\License.rtf" />
+    
+    <!-- Banner and dialog images -->
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.SourceDir)\assets\banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.SourceDir)\assets\dialog.bmp" />
+    
+  </Product>
+</Wix>

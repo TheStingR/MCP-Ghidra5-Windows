@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+TechSquad MCP Ghidra5 - Installation Bundle
+Bootstrapper for prerequisite installation and deployment management
+
+Copyright (c) 2024 TechSquad Inc. - All Rights Reserved
+-->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" 
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <Bundle Name="TechSquad MCP Ghidra5 Server"
+          Version="2.0.0.0"
+          Manufacturer="TechSquad Inc."
+          UpgradeCode="12345678-1234-1234-1234-123456789013"
+          Copyright="© 2024 TechSquad Inc. All rights reserved."
+          AboutUrl="https://techsquad.com/products/mcp-ghidra5"
+          HelpUrl="https://techsquad.com/support/mcp-ghidra5"
+          UpdateUrl="https://techsquad.com/updates/mcp-ghidra5"
+          IconSourceFile="assets\TechSquadIcon.ico">
+
+    <!-- Variables for configuration -->
+    <Variable Name="InstallFolder" Type="string" Value="[ProgramFilesFolder]TechSquad\MCP-Ghidra5\" bal:Overridable="yes" />
+    <Variable Name="InstallType" Type="string" Value="Express" bal:Overridable="yes" />
+    <Variable Name="LaunchAfterInstall" Type="numeric" Value="0" bal:Overridable="yes" />
+
+    <!-- Bundle update configuration -->
+    <Update Location="https://techsquad.com/updates/mcp-ghidra5/updates.xml" />
+
+    <!-- Custom bootstrapper application -->
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication 
+        LicenseFile="assets\License.rtf"
+        ThemeFile="assets\TechSquadTheme.xml"
+        LocalizationFile="assets\TechSquadStrings.wxl"
+        LogoFile="assets\TechSquadLogo.png"
+        LogoSideFile="assets\TechSquadBanner.png"
+        SuppressOptionsUI="no"
+        SuppressDowngradeFailure="no"
+        SuppressRepair="no"
+        ShowVersion="yes" />
+    </BootstrapperApplication>
+
+    <!-- Installation Chain -->
+    <Chain>
+      <!-- .NET Framework prerequisite -->
+      <PackageGroupRef Id="NetFx48Web" />
+      
+      <!-- Visual C++ Redistributables -->
+      <ExePackage Id="Vcredist2019x64"
+                  DisplayName="Microsoft Visual C++ 2019 Redistributable (x64)"
+                  Cache="no"
+                  Compressed="no"
+                  PerMachine="yes"
+                  Permanent="yes"
+                  Protocol="burn"
+                  DownloadUrl="https://aka.ms/vs/16/release/vc_redist.x64.exe"
+                  InstallCommand="/install /quiet /norestart"
+                  InstallCondition="NOT VersionNT64 OR (VersionNT64 AND NOT WixBundleInstalled_Vcredist2019x64)"
+                  DetectCondition="WixBundleInstalled_Vcredist2019x64" />
+
+      <!-- Python prerequisite -->
+      <ExePackage Id="Python3Latest"
+                  DisplayName="Python 3.11 or later"
+                  Cache="no"
+                  Compressed="no"
+                  PerMachine="yes"
+                  Permanent="no"
+                  Protocol="burn"
+                  DownloadUrl="https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe"
+                  InstallCommand="/quiet InstallAllUsers=1 PrependPath=1 Include_test=0"
+                  InstallCondition="NOT PythonInstalled"
+                  DetectCondition="PythonInstalled" />
+
+      <!-- Main MSI Package -->
+      <MsiPackage Id="TechSquadMCPGhidra5"
+                  SourceFile="TechSquadMCPGhidra5.msi"
+                  DisplayName="TechSquad MCP Ghidra5 Server"
+                  Description="AI-powered reverse engineering server with enterprise features"
+                  Cache="yes"
+                  Compressed="yes"
+                  Vital="yes"
+                  InstallCondition="1">
+        
+        <!-- Pass bundle variables to MSI -->
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
+        <MsiProperty Name="INSTALLTYPE" Value="[InstallType]" />
+        <MsiProperty Name="ARPINSTALLLOCATION" Value="[InstallFolder]" />
+      </MsiPackage>
+
+      <!-- Configuration Manager (optional) -->
+      <MsiPackage Id="TechSquadConfigManager"
+                  SourceFile="TechSquadConfigManager.msi"
+                  DisplayName="TechSquad Configuration Manager"
+                  Description="GUI configuration tool for MCP Ghidra5 Server"
+                  Cache="yes"
+                  Compressed="yes"
+                  Vital="no"
+                  InstallCondition="WixBundleAction = 2"
+                  Visible="yes">
+        
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]Tools\" />
+      </MsiPackage>
+    </Chain>
+
+    <!-- Bundle extension for feature detection -->
+    <util:RegistrySearch Id="PythonSearch"
+                         Root="HKLM"
+                         Key="SOFTWARE\Python\PythonCore\3.11\InstallPath"
+                         Variable="PythonInstalled" />
+
+    <util:RegistrySearch Id="GhidraSearch"
+                         Root="HKLM"
+                         Key="SOFTWARE\WOW6432Node\NSA\Ghidra"
+                         Name="InstallPath"
+                         Variable="GhidraPath" />
+
+    <util:FileSearch Id="PowerShellSearch"
+                     Path="[SystemFolder]WindowsPowerShell\v1.0\powershell.exe"
+                     Variable="PowerShellInstalled" />
+  </Bundle>
+
+  <!-- Package Groups for Prerequisites -->
+  <Fragment>
+    <PackageGroup Id="NetFx48Web">
+      <ExePackage Id="NetFx48WebSetup"
+                  DisplayName="Microsoft .NET Framework 4.8"
+                  Cache="no"
+                  Compressed="no"
+                  PerMachine="yes"
+                  Permanent="yes"
+                  Protocol="netfx4"
+                  DownloadUrl="https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP48-Web.exe"
+                  InstallCommand="/q"
+                  InstallCondition="NOT Netfx4FullVersion OR (Netfx4FullVersion AND Netfx4FullVersion &lt; v4.8.0.0)"
+                  DetectCondition="Netfx4FullVersion AND (Netfx4FullVersion &gt;= v4.8.0.0)" />
+    </PackageGroup>
+  </Fragment>
+
+  <!-- Feature detection conditions -->
+  <Fragment>
+    <WixVariable Id="WixMbaPrereqPackageId" Value="NetFx48WebSetup" />
+    <WixVariable Id="WixMbaPrereqLicenseUrl" Value="https://go.microsoft.com/fwlink/?LinkId=2085167" />
+  </Fragment>
+</Wix>

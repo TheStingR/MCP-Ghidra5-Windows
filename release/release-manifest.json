@@ -1,0 +1,45 @@
+{
+  "release": {
+    "name": "MCP-Ghidra5 Windows v1.0.0",
+    "version": "1.0.0",
+    "build_date": "2025-09-21T16:49:28Z",
+    "platform": "Windows x64",
+    "stability": "stable"
+  },
+  "packages": {
+    "source": {
+      "file": "MCP-Ghidra5-Windows-Source-v1.0.0.tar.gz",
+      "description": "Complete source code with build scripts",
+      "size": "98K"
+    },
+    "installer": {
+      "file": "MCP-Ghidra5-Windows-Installer-Components-v1.0.0.zip",
+      "description": "Windows installer components and build tools",
+      "size": "181K"
+    },
+    "documentation": {
+      "file": "MCP-Ghidra5-Windows-Documentation-v1.0.0.zip",
+      "description": "Complete documentation bundle",
+      "size": "17K"
+    },
+    "deploy": {
+      "file": "MCP-Ghidra5-Windows-Deploy-Ready-v1.0.0.tar.gz",
+      "description": "Ready-to-deploy package with core components",
+      "size": "121K"
+    }
+  },
+  "system_requirements": {
+    "os": "Windows 10 Version 1909+ / Windows Server 2019+",
+    "architecture": "x64",
+    "memory": "4GB RAM minimum, 8GB recommended",
+    "storage": "2GB free space",
+    "dependencies": ["Python 3.11+", "Java 11+", "Ghidra 11.0+", "PowerShell 5.1+"]
+  },
+  "features": {
+    "core_service": "Windows background service with MCP protocol",
+    "ghidra_integration": "Automated reverse engineering with headless Ghidra",
+    "management_tools": "PowerShell scripts for installation and management",
+    "enterprise_ready": "Professional installer, logging, and monitoring",
+    "docker_testing": "Complete Windows container testing environment"
+  }
+}

@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+TechSquad MCP Ghidra5 - Custom Installer UI
+Professional installation wizard with step-by-step interface
+
+Copyright (c) 2024 TechSquad Inc. - All Rights Reserved
+-->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <UI Id="TechSquadWixUI">
+      <!-- Error dialog -->
+      <DialogRef Id="ErrorDlg" />
+      <DialogRef Id="FatalError" />
+      <DialogRef Id="FilesInUse" />
+      <DialogRef Id="MsiRMFilesInUse" />
+      <DialogRef Id="PrepareDlg" />
+      <DialogRef Id="ProgressDlg" />
+      <DialogRef Id="ResumeDlg" />
+      <DialogRef Id="UserExit" />
+      
+      <!-- Welcome dialog -->
+      <Dialog Id="WelcomeDlg" Width="370" Height="270" Title="[ProductName] Setup" NoMinimize="yes">
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next &gt;">
+          <Publish Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="&lt; &amp;Back" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Description" Type="Text" X="135" Y="80" Width="220" Height="60" Transparent="yes" NoPrefix="yes" Text="Welcome to the [ProductName] Setup Wizard. This will install [ProductName] on your computer with enterprise-grade features including Windows service integration, advanced security, and AI-powered reverse engineering capabilities." />
+        <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Bigger}Welcome to TechSquad MCP Ghidra5 Server" />
+      </Dialog>
+
+      <!-- License Agreement Dialog -->
+      <Dialog Id="LicenseAgreementDlg" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="LicenseAcceptedCheckBox" Type="CheckBox" X="20" Y="207" Width="330" Height="18" CheckBoxValue="1" Property="LicenseAccepted" Text="I &amp;accept the terms in the License Agreement" />
+        <Control Id="Print" Type="PushButton" X="112" Y="243" Width="56" Height="17" Text="&amp;Print" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&lt; &amp;Back">
+          <Publish Event="NewDialog" Value="WelcomeDlg">1</Publish>
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next &gt;">
+          <Condition Action="disable"><![CDATA[LicenseAccepted <> "1"]]></Condition>
+          <Condition Action="enable">LicenseAccepted = "1"</Condition>
+          <Publish Event="NewDialog" Value="InstallTypeDlg">LicenseAccepted = "1"</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="LicenseText" Type="ScrollableText" X="20" Y="60" Width="330" Height="140" Sunken="yes" TabSkip="no">
+          <Text SourceFile="!(wix.WixUILicenseRtf)" />
+        </Control>
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Please read the following license agreement carefully." />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}License Agreement" />
+      </Dialog>
+
+      <!-- Installation Type Dialog -->
+      <Dialog Id="InstallTypeDlg" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="ExpressRadioButton" Type="RadioButtonGroup" X="20" Y="55" Width="330" Height="150" Property="InstallationType" Text="{\WixUI_Font_Normal}Choose the type of setup that best suits your needs.">
+          <RadioButtonGroup Property="InstallationType">
+            <RadioButton Value="Express" X="0" Y="0" Width="320" Height="45" Text="{\WixUI_Font_Bigger}&amp;Express Installation{} \r\n{\WixUI_Font_Normal}Installs TechSquad MCP Ghidra5 Server with recommended settings. Includes Windows service, firewall configuration, and basic security features." />
+            <RadioButton Value="Custom" X="0" Y="50" Width="320" Height="45" Text="{\WixUI_Font_Bigger}&amp;Custom Installation{} \r\n{\WixUI_Font_Normal}Allows you to choose which components to install and configure advanced settings. Recommended for advanced users." />
+            <RadioButton Value="Enterprise" X="0" Y="100" Width="320" Height="45" Text="{\WixUI_Font_Bigger}&amp;Enterprise Installation{} \r\n{\WixUI_Font_Normal}Full enterprise deployment with all features, centralized configuration, and domain integration support." />
+          </RadioButtonGroup>
+        </Control>
+        
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&lt; &amp;Back">
+          <Publish Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next &gt;">
+          <Publish Event="NewDialog" Value="InstallDirDlg">InstallationType = "Express"</Publish>
+          <Publish Event="NewDialog" Value="CustomizeDlg">InstallationType = "Custom"</Publish>
+          <Publish Event="NewDialog" Value="EnterpriseDlg">InstallationType = "Enterprise"</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Select the installation type that best fits your environment." />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Installation Type" />
+      </Dialog>
+
+      <!-- Installation Directory Dialog -->
+      <Dialog Id="InstallDirDlg" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next &gt;">
+          <Publish Event="SetTargetPath" Value="WIXUI_INSTALLDIR" Order="1">1</Publish>
+          <Publish Event="NewDialog" Value="SystemCheckDlg" Order="2">1</Publish>
+        </Control>
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&lt; &amp;Back">
+          <Publish Event="NewDialog" Value="InstallTypeDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Choose the folder in which to install [ProductName]." />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Destination Folder" />
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="FolderLabel" Type="Text" X="20" Y="60" Width="290" Height="30" NoPrefix="yes" Text="Install [ProductName] to:" />
+        <Control Id="Folder" Type="PathEdit" X="20" Y="100" Width="320" Height="18" Property="WIXUI_INSTALLDIR" Indirect="yes" />
+        <Control Id="ChangeFolder" Type="PushButton" X="20" Y="120" Width="56" Height="17" Text="&amp;Change...">
+          <Publish Event="SpawnDialog" Value="BrowseDlg">1</Publish>
+        </Control>
+        <Control Id="DiskCostButton" Type="PushButton" X="111" Y="120" Width="56" Height="17" Text="&amp;Disk Usage">
+          <Publish Event="SpawnDialog" Value="DiskCostDlg">1</Publish>
+        </Control>
+        
+        <!-- Space requirements -->
+        <Control Id="SpaceLabel" Type="Text" X="20" Y="160" Width="290" Height="40" NoPrefix="yes" Text="Space required: ~200 MB{13}{10}Additional space for Ghidra projects and logs will be allocated in ProgramData." />
+      </Dialog>
+
+      <!-- System Check Dialog -->
+      <Dialog Id="SystemCheckDlg" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="SystemCheckList" Type="ListView" X="20" Y="60" Width="330" Height="140" Property="SystemCheckResults" Sunken="yes">
+          <ListBox Property="SystemCheckResults">
+            <ListItem Text="Windows Version Check" Value="WindowsVersion" />
+            <ListItem Text="Administrator Privileges" Value="AdminCheck" />
+            <ListItem Text="Python Installation" Value="PythonCheck" />
+            <ListItem Text="Ghidra Installation" Value="GhidraCheck" />
+            <ListItem Text="Port Availability" Value="PortCheck" />
+            <ListItem Text="Disk Space" Value="DiskSpaceCheck" />
+          </ListBox>
+        </Control>
+        
+        <Control Id="RefreshButton" Type="PushButton" X="20" Y="210" Width="66" Height="17" Text="&amp;Refresh">
+          <Publish Event="DoAction" Value="DetectPython">1</Publish>
+          <Publish Event="DoAction" Value="DetectGhidra">1</Publish>
+        </Control>
+        
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&lt; &amp;Back">
+          <Publish Event="NewDialog" Value="InstallDirDlg">1</Publish>
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next &gt;">
+          <Publish Event="NewDialog" Value="ConfigurationDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Validating system requirements and dependencies." />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}System Requirements Check" />
+      </Dialog>
+
+      <!-- Configuration Dialog -->
+      <Dialog Id="ConfigurationDlg" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="ServerPortLabel" Type="Text" X="20" Y="60" Width="100" Height="15" NoPrefix="yes" Text="Server Port:" />
+        <Control Id="ServerPortEdit" Type="Edit" X="130" Y="58" Width="60" Height="18" Property="SERVERPORT" />
+        
+        <Control Id="GhidraPathLabel" Type="Text" X="20" Y="85" Width="100" Height="15" NoPrefix="yes" Text="Ghidra Path:" />
+        <Control Id="GhidraPathEdit" Type="Edit" X="130" Y="83" Width="180" Height="18" Property="GHIDRAPATH" />
+        <Control Id="GhidraBrowse" Type="PushButton" X="315" Y="83" Width="25" Height="18" Text="...">
+          <Publish Event="SpawnDialog" Value="GhidraBrowseDlg">1</Publish>
+        </Control>
+        
+        <Control Id="InstallServiceCheck" Type="CheckBox" X="20" Y="115" Width="320" Height="18" Property="INSTALLSERVICE" CheckBoxValue="1" Text="Install as Windows Service (Recommended)" />
+        <Control Id="CreateFirewallCheck" Type="CheckBox" X="20" Y="135" Width="320" Height="18" Property="CREATEFIREWALLRULE" CheckBoxValue="1" Text="Create Windows Firewall Rule" />
+        <Control Id="DefenderExclusionsCheck" Type="CheckBox" X="20" Y="155" Width="320" Height="18" Property="ADDDEFENDEREXCLUSIONS" CheckBoxValue="1" Text="Add Windows Defender Exclusions" />
+        
+        <Control Id="ConfigNote" Type="Text" X="20" Y="185" Width="320" Height="30" NoPrefix="yes" Text="Note: Service installation and security configurations require administrator privileges. These settings can be modified after installation." />
+        
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&lt; &amp;Back">
+          <Publish Event="NewDialog" Value="SystemCheckDlg">1</Publish>
+        </Control>
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next &gt;">
+          <Publish Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Configure server settings and security options." />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Server Configuration" />
+      </Dialog>
+
+      <!-- Ready to Install Dialog -->
+      <Dialog Id="VerifyReadyDlg" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="Install" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Install">
+          <Publish Event="EndDialog" Value="Return">1</Publish>
+        </Control>
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&lt; &amp;Back">
+          <Publish Event="NewDialog" Value="ConfigurationDlg">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Ready to install TechSquad MCP Ghidra5 Server." />
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Ready to Install" />
+        
+        <Control Id="InstallationSummary" Type="Text" X="20" Y="60" Width="330" Height="160" NoPrefix="yes">
+          <Text>The installer is ready to install [ProductName] on your computer.
+
+Installation Directory: [INSTALLDIR]
+Server Port: [SERVERPORT]
+Windows Service: [INSTALLSERVICE]
+Firewall Rule: [CREATEFIREWALLRULE]
+Defender Exclusions: [ADDDEFENDEREXCLUSIONS]
+
+Click Install to begin the installation, or click Back to review or change settings.</Text>
+        </Control>
+      </Dialog>
+
+      <!-- Installation Complete Dialog -->
+      <Dialog Id="ExitDlg" Width="370" Height="270" Title="[ProductName] Setup" NoMinimize="yes">
+        <Control Id="Finish" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Finish">
+          <Publish Event="EndDialog" Value="Return" Order="999">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Disabled="yes" Text="Cancel" />
+        <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="234" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" Text="&lt; &amp;Back" />
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+        <Control Id="Description" Type="Text" X="135" Y="80" Width="220" Height="85" Transparent="yes" NoPrefix="yes" Text="TechSquad MCP Ghidra5 Server has been successfully installed.
+
+Next Steps:
+• Configure your OpenAI API key
+• Verify Ghidra installation
+• Start the service or application
+• Review the documentation
+
+Thank you for choosing TechSquad Inc." />
+        <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Bigger}Installation Complete" />
+        
+        <Control Id="LaunchCheckBox" Type="CheckBox" X="135" Y="200" Width="220" Height="18" Property="LAUNCHPRODUCT" CheckBoxValue="1" Text="&amp;Launch TechSquad MCP Ghidra5 Configuration Manager" />
+      </Dialog>
+
+      <!-- Install sequence -->
+      <InstallUISequence>
+        <Show Dialog="WelcomeDlg" Before="ProgressDlg">NOT Installed</Show>
+        <Show Dialog="ProgressDlg" After="WelcomeDlg" />
+        <Show Dialog="ExitDlg" After="ProgressDlg">NOT Installed</Show>
+      </InstallUISequence>
+
+      <AdminUISequence>
+        <Show Dialog="WelcomeDlg" Before="ProgressDlg">NOT Installed</Show>
+        <Show Dialog="ProgressDlg" After="WelcomeDlg" />
+        <Show Dialog="ExitDlg" After="ProgressDlg">NOT Installed</Show>
+      </AdminUISequence>
+    </UI>
+
+    <!-- Property for install directory -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    
+    <!-- Property for installation type -->
+    <Property Id="InstallationType" Value="Express" />
+    
+    <!-- Launch application after install -->
+    <Property Id="LAUNCHPRODUCT" Value="0" />
+    
+    <CustomAction Id="LaunchApplication" FileKey="ConfigScript" ExeCommand="" Return="asyncNoWait" />
+    
+    <InstallExecuteSequence>
+      <Custom Action="LaunchApplication" After="InstallFinalize">NOT Installed AND LAUNCHPRODUCT = "1"</Custom>
+    </InstallExecuteSequence>
+  </Fragment>
+</Wix>

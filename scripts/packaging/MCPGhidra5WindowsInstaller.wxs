@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MCP-Ghidra5 Windows - Professional MSI Installer
+  ===============================================
+  Enterprise-grade Windows installer with:
+  - Dependency detection and installation
+  - Registry configuration
+  - Windows service integration
+  - Professional UI with custom dialogs
+  - Silent installation support
+  - Corporate deployment features
+  
+  Copyright (c) 2024 TechSquad. All Rights Reserved.
+-->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" 
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <!-- Product Information -->
+  <Product Id="*" 
+           Name="MCP Ghidra5 Windows" 
+           Language="1033" 
+           Version="1.0.0" 
+           Manufacturer="TechSquad" 
+           UpgradeCode="12345678-1234-1234-1234-123456789012">
+    
+    <Package InstallerVersion="500" 
+             Compressed="yes" 
+             InstallScope="perMachine" 
+             InstallPrivileges="elevated"
+             Description="AI-powered reverse engineering server with enterprise Windows integration"
+             Comments="MCP Ghidra5 Windows Enterprise Edition - Professional Windows service wrapper for AI-enhanced reverse engineering"
+             Manufacturer="TechSquad"
+             Keywords="Ghidra,AI,Reverse Engineering,MCP,OpenAI,Enterprise,Windows Service" />
+
+    <!-- Upgrade Logic -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
+                  Schedule="afterInstallInitialize" />
+
+    <!-- Media and Compression -->
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- System Requirements -->
+    <Condition Message="This application requires Windows 10 or Windows Server 2019 or later.">
+      <![CDATA[Installed OR (VersionNT >= 602)]]>
+    </Condition>
+    
+    <Condition Message="This application requires administrator privileges.">
+      <![CDATA[Installed OR Privileged]]>
+    </Condition>
+
+    <!-- Properties -->
+    <Property Id="ARPPRODUCTICON" Value="MCPGhidraIcon.exe" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/techsquad/mcp-ghidra5-windows" />
+    <Property Id="ARPURLINFOABOUT" Value="https://techsquad.com" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://github.com/techsquad/mcp-ghidra5-windows/releases" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    
+    <!-- Installation Properties -->
+    <Property Id="INSTALLDIR">
+      <RegistrySearch Id="FindInstallLocation" 
+                      Root="HKLM" 
+                      Key="SOFTWARE\TechSquad\MCP-Ghidra5" 
+                      Name="InstallLocation" 
+                      Type="raw" />
+    </Property>
+    
+    <!-- Ghidra Path Detection -->
+    <Property Id="GHIDRA_PATH">
+      <DirectorySearch Id="FindGhidra1" Path="C:\ghidra" Depth="2">
+        <FileSearch Name="analyzeHeadless.bat" />
+      </DirectorySearch>
+    </Property>
+    
+    <Property Id="GHIDRA_PATH2">
+      <DirectorySearch Id="FindGhidra2" Path="C:\Program Files\ghidra" Depth="2">
+        <FileSearch Name="analyzeHeadless.bat" />
+      </DirectorySearch>
+    </Property>
+    
+    <!-- Python Detection -->
+    <Property Id="PYTHON_INSTALLED">
+      <DirectorySearch Id="FindPython" Path="[SystemFolder]" Depth="0">
+        <FileSearch Name="python.exe" />
+      </DirectorySearch>
+    </Property>
+    
+    <!-- Java Detection -->
+    <Property Id="JAVA_HOME">
+      <RegistrySearch Id="FindJavaHome" 
+                      Root="HKLM" 
+                      Key="SOFTWARE\JavaSoft\Java Runtime Environment" 
+                      Name="CurrentVersion" 
+                      Type="raw">
+        <RegistrySearch Id="FindJavaHomePath" 
+                        Key="[JAVA_HOME]" 
+                        Name="JavaHome" 
+                        Type="raw" />
+      </RegistrySearch>
+    </Property>
+
+    <!-- Features -->
+    <Feature Id="MainApplication" Title="MCP Ghidra5 Core" Level="1" 
+             Description="Core MCP server and Windows service integration">
+      <ComponentGroupRef Id="MainApplicationComponents" />
+      <ComponentGroupRef Id="ConfigurationComponents" />
+      <ComponentGroupRef Id="RegistryComponents" />
+    </Feature>
+    
+    <Feature Id="PowerShellModules" Title="PowerShell Management" Level="1"
+             Description="PowerShell modules for service management and administration">
+      <ComponentGroupRef Id="PowerShellComponents" />
+    </Feature>
+    
+    <Feature Id="WindowsTerminalIntegration" Title="Terminal Integration" Level="2"
+             Description="Windows Terminal profiles and shortcuts">
+      <ComponentGroupRef Id="TerminalComponents" />
+    </Feature>
+    
+    <Feature Id="Documentation" Title="Documentation" Level="2"
+             Description="User guides, deployment documentation, and examples">
+      <ComponentGroupRef Id="DocumentationComponents" />
+    </Feature>
+
+    <!-- Directory Structure -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      
+      <!-- Program Files -->
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLDIR" Name="MCP-Ghidra5">
+          
+          <!-- Main Application -->
+          <Directory Id="MainAppDir" Name="MCP-Ghidra5-Windows">
+            
+            <!-- Source Code -->
+            <Directory Id="SourceDir" Name="src">
+              <Directory Id="ConfigDir" Name="config" />
+            </Directory>
+            
+            <!-- Scripts -->
+            <Directory Id="ScriptsDir" Name="scripts">
+              <Directory Id="ServiceDir" Name="service" />
+              <Directory Id="TerminalDir" Name="terminal" />
+              <Directory Id="InstallationDir" Name="installation" />
+            </Directory>
+          </Directory>
+          
+          <!-- Documentation -->
+          <Directory Id="DocsDir" Name="docs" />
+          
+        </Directory>
+      </Directory>
+      
+      <!-- Program Data -->
+      <Directory Id="CommonAppDataFolder">
+        <Directory Id="AppDataDir" Name="MCP-Ghidra5">
+          <Directory Id="LogsDir" Name="Logs" />
+          <Directory Id="ProjectsDir" Name="Projects" />
+          <Directory Id="ConfigDataDir" Name="Config" />
+        </Directory>
+      </Directory>
+      
+      <!-- Start Menu -->
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="MCP Ghidra5" />
+      </Directory>
+      
+      <!-- Desktop -->
+      <Directory Id="DesktopFolder" />
+      
+    </Directory>
+
+    <!-- Component Groups -->
+    
+    <!-- Main Application Components -->
+    <ComponentGroup Id="MainApplicationComponents" Directory="SourceDir">
+      <Component Id="MainServerScript" Guid="*">
+        <File Id="MCPServerWindows" Source="..\..\src\mcp_ghidra_server_windows.py" KeyPath="yes" />
+      </Component>
+      <Component Id="GhidraIntegration" Guid="*">
+        <File Id="GhidraMCP" Source="..\..\src\ghidra_gpt5_mcp.py" KeyPath="yes" />
+      </Component>
+      <Component Id="TestScript" Guid="*">
+        <File Id="TestGhidra" Source="..\..\src\test_ghidra_gpt5.py" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+    
+    <!-- Configuration Components -->
+    <ComponentGroup Id="ConfigurationComponents" Directory="ConfigDir">
+      <Component Id="ServiceConfig" Guid="*">
+        <File Id="ServiceConf" Source="..\..\src\config\service.conf" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+    
+    <!-- PowerShell Components -->
+    <ComponentGroup Id="PowerShellComponents" Directory="ServiceDir">
+      <Component Id="WindowsService" Guid="*">
+        <File Id="ServiceWrapper" Source="..\service\mcp_ghidra5_service.py" KeyPath="yes" />
+      </Component>
+      <Component Id="ServiceInstaller" Guid="*">
+        <File Id="InstallService" Source="..\service\Install-MCPGhidra5Service.ps1" KeyPath="yes" />
+      </Component>
+      <Component Id="ServiceManager" Guid="*">
+        <File Id="ManageService" Source="..\service\Manage-MCPGhidra5Service.ps1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+    
+    <!-- Terminal Components -->
+    <ComponentGroup Id="TerminalComponents" Directory="TerminalDir">
+      <Component Id="TerminalIntegration" Guid="*">
+        <File Id="TerminalInstaller" Source="..\terminal\Install-WindowsTerminalIntegration.ps1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+    
+    <!-- Documentation Components -->
+    <ComponentGroup Id="DocumentationComponents" Directory="DocsDir">
+      <Component Id="MainReadme" Guid="*">
+        <File Id="ReadmeMD" Source="..\..\README.md" KeyPath="yes" />
+      </Component>
+      <Component Id="DeploymentGuide" Guid="*">
+        <File Id="DeploymentMD" Source="..\..\docs\DEPLOYMENT_GUIDE.md" KeyPath="yes" />
+      </Component>
+      <Component Id="ProjectSummary" Guid="*">
+        <File Id="ProjectMD" Source="..\..\docs\PROJECT_SUMMARY.md" KeyPath="yes" />
+      </Component>
+      <Component Id="Changelog" Guid="*">
+        <File Id="ChangelogMD" Source="..\..\docs\CHANGELOG.md" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Registry Components -->
+    <ComponentGroup Id="RegistryComponents">
+      <Component Id="RegistryEntries" Guid="*" Directory="INSTALLDIR">
+        <!-- Installation Location -->
+        <RegistryValue Root="HKLM" 
+                       Key="SOFTWARE\TechSquad\MCP-Ghidra5" 
+                       Name="InstallLocation" 
+                       Type="string" 
+                       Value="[INSTALLDIR]" 
+                       KeyPath="yes" />
+        
+        <!-- Version Information -->
+        <RegistryValue Root="HKLM" 
+                       Key="SOFTWARE\TechSquad\MCP-Ghidra5" 
+                       Name="Version" 
+                       Type="string" 
+                       Value="1.0.0" />
+        
+        <!-- Ghidra Path -->
+        <RegistryValue Root="HKLM" 
+                       Key="SOFTWARE\TechSquad\MCP-Ghidra5" 
+                       Name="GhidraPath" 
+                       Type="string" 
+                       Value="[GHIDRA_HEADLESS_PATH]" />
+        
+        <!-- Project Directory -->
+        <RegistryValue Root="HKLM" 
+                       Key="SOFTWARE\TechSquad\MCP-Ghidra5" 
+                       Name="ProjectDirectory" 
+                       Type="string" 
+                       Value="[CommonAppDataFolder]MCP-Ghidra5\Projects" />
+        
+        <!-- Service Configuration -->
+        <RegistryValue Root="HKLM" 
+                       Key="SOFTWARE\TechSquad\MCP-Ghidra5\Service" 
+                       Name="AutoStart" 
+                       Type="integer" 
+                       Value="[AUTOSTART_SERVICE]" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Start Menu Shortcuts -->
+    <ComponentGroup Id="StartMenuComponents" Directory="ApplicationProgramsFolder">
+      <Component Id="StartMenuShortcuts" Guid="*">
+        <Shortcut Id="ManageServiceShortcut"
+                  Name="Manage MCP Ghidra5 Service"
+                  Description="Manage MCP Ghidra5 Windows Service"
+                  Target="powershell.exe"
+                  Arguments='-ExecutionPolicy Bypass -File "[#ManageService]" -Action Status'
+                  WorkingDirectory="ServiceDir" />
+        
+        <Shortcut Id="UninstallShortcut"
+                  Name="Uninstall MCP Ghidra5"
+                  Description="Uninstall MCP Ghidra5 Windows"
+                  Target="[SystemFolder]msiexec.exe"
+                  Arguments="/x [ProductCode]" />
+        
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" 
+                       Key="Software\TechSquad\MCP-Ghidra5" 
+                       Name="StartMenu" 
+                       Type="integer" 
+                       Value="1" 
+                       KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Custom Actions -->
+    
+    <!-- Install Windows Service -->
+    <CustomAction Id="InstallWindowsService" 
+                  Directory="ServiceDir" 
+                  ExeCommand="powershell.exe -ExecutionPolicy Bypass -File &quot;[ServiceDir]Install-MCPGhidra5Service.ps1&quot; -AutoStart:[AUTOSTART_SERVICE]" 
+                  Execute="deferred" 
+                  Impersonate="no" 
+                  Return="ignore" />
+    
+    <!-- Uninstall Windows Service -->
+    <CustomAction Id="UninstallWindowsService" 
+                  Directory="ServiceDir" 
+                  ExeCommand="powershell.exe -ExecutionPolicy Bypass -File &quot;[ServiceDir]Manage-MCPGhidra5Service.ps1&quot; -Action Uninstall -RemoveData" 
+                  Execute="deferred" 
+                  Impersonate="no" 
+                  Return="ignore" />
+    
+    <!-- Install Dependencies -->
+    <CustomAction Id="InstallDependencies" 
+                  Directory="INSTALLDIR" 
+                  ExeCommand="powershell.exe -ExecutionPolicy Bypass -Command &quot;&amp; { pip install pywin32 psutil configparser httpx }&quot;" 
+                  Execute="deferred" 
+                  Impersonate="no" 
+                  Return="ignore" />
+
+    <!-- Installation Sequence -->
+    <InstallExecuteSequence>
+      <!-- Install dependencies after files are installed -->
+      <Custom Action="InstallDependencies" After="InstallFiles">
+        NOT Installed AND NOT REMOVE
+      </Custom>
+      
+      <!-- Install Windows service after dependencies -->
+      <Custom Action="InstallWindowsService" After="InstallDependencies">
+        NOT Installed AND NOT REMOVE
+      </Custom>
+      
+      <!-- Uninstall service before removing files -->
+      <Custom Action="UninstallWindowsService" Before="RemoveFiles">
+        Installed AND REMOVE="ALL"
+      </Custom>
+    </InstallExecuteSequence>
+
+    <!-- User Interface -->
+    <UIRef Id="WixUI_FeatureTree" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+    <!-- License -->
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+    
+    <!-- Banner and Dialog Images -->
+    <WixVariable Id="WixUIBannerBmp" Value="Banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="Dialog.bmp" />
+
+  </Product>
+</Wix>

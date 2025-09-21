@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MCP-Ghidra5 Windows - Custom Installer UI
+  ========================================
+  Custom installation dialogs for professional user experience:
+  - Ghidra path detection and configuration
+  - Service configuration options
+  - Dependency validation
+  - Prerequisites checking
+  
+  Copyright (c) 2024 TechSquad. All Rights Reserved.
+-->
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    
+    <!-- Custom Properties for UI -->
+    <Property Id="GHIDRA_HEADLESS_PATH" Value="" />
+    <Property Id="AUTOSTART_SERVICE" Value="1" />
+    <Property Id="INSTALL_PYTHON_DEPS" Value="1" />
+    <Property Id="CONFIGURE_FIREWALL" Value="1" />
+    <Property Id="OPENAI_API_KEY" Value="" />
+    
+    <!-- Ghidra Path Dialog -->
+    <UI Id="GhidraPathDialog">
+      <Dialog Id="GhidraPathDlg" Width="370" Height="270" Title="[ProductName] - Ghidra Configuration">
+        
+        <!-- Title -->
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="300" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Ghidra Configuration" />
+        
+        <!-- Subtitle -->
+        <Control Id="Subtitle" Type="Text" X="25" Y="23" Width="280" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="Configure Ghidra integration settings." />
+        
+        <!-- Description -->
+        <Control Id="Description" Type="Text" X="25" Y="45" Width="320" Height="30" 
+                 Transparent="yes" NoPrefix="yes" Text="Please specify the path to your Ghidra installation. If Ghidra is not installed, you can install it later and configure the path manually." />
+        
+        <!-- Ghidra Path Label -->
+        <Control Id="GhidraPathLabel" Type="Text" X="25" Y="85" Width="100" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="Ghidra Path:" />
+        
+        <!-- Ghidra Path Edit Box -->
+        <Control Id="GhidraPathEdit" Type="Edit" X="25" Y="100" Width="280" Height="18" 
+                 Property="GHIDRA_HEADLESS_PATH" Text="[GHIDRA_HEADLESS_PATH]" />
+        
+        <!-- Browse Button -->
+        <Control Id="BrowseButton" Type="PushButton" X="315" Y="100" Width="35" Height="18" 
+                 Text="..." ToolTip="Browse for Ghidra installation">
+          <Publish Event="SpawnDialog" Value="BrowseDlg">1</Publish>
+        </Control>
+        
+        <!-- Auto-detected Path Info -->
+        <Control Id="AutoDetectedInfo" Type="Text" X="25" Y="125" Width="320" Height="20" 
+                 Transparent="yes" NoPrefix="yes" Text="Auto-detected: [GHIDRA_PATH][GHIDRA_PATH2]" />
+        
+        <!-- Service Configuration Group -->
+        <Control Id="ServiceGroupBox" Type="GroupBox" X="25" Y="150" Width="320" Height="60" 
+                 Text="Service Configuration" />
+        
+        <!-- Auto-start Service Checkbox -->
+        <Control Id="AutoStartCheck" Type="CheckBox" X="35" Y="170" Width="200" Height="18" 
+                 Property="AUTOSTART_SERVICE" CheckBoxValue="1" 
+                 Text="Start MCP Ghidra5 service automatically" />
+        
+        <!-- Configure Firewall Checkbox -->
+        <Control Id="FirewallCheck" Type="CheckBox" X="35" Y="190" Width="200" Height="18" 
+                 Property="CONFIGURE_FIREWALL" CheckBoxValue="1" 
+                 Text="Configure Windows Firewall rules" />
+        
+        <!-- Navigation Buttons -->
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" 
+                 Text="&amp;Back">
+          <Publish Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
+        </Control>
+        
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" 
+                 Default="yes" Text="&amp;Next">
+          <Publish Event="NewDialog" Value="DependencyCheckDlg">1</Publish>
+        </Control>
+        
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" 
+                 Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        
+      </Dialog>
+    </UI>
+    
+    <!-- Dependency Check Dialog -->
+    <UI Id="DependencyCheckDialog">
+      <Dialog Id="DependencyCheckDlg" Width="370" Height="270" Title="[ProductName] - Dependency Check">
+        
+        <!-- Title -->
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="300" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Dependency Check" />
+        
+        <!-- Subtitle -->
+        <Control Id="Subtitle" Type="Text" X="25" Y="23" Width="280" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="Validating system requirements and dependencies." />
+        
+        <!-- Python Status -->
+        <Control Id="PythonLabel" Type="Text" X="25" Y="50" Width="80" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="Python 3.8+:" />
+        <Control Id="PythonStatus" Type="Text" X="110" Y="50" Width="200" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="[PYTHON_STATUS]" />
+        
+        <!-- Java Status -->
+        <Control Id="JavaLabel" Type="Text" X="25" Y="70" Width="80" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="Java 11+:" />
+        <Control Id="JavaStatus" Type="Text" X="110" Y="70" Width="200" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="[JAVA_STATUS]" />
+        
+        <!-- Ghidra Status -->
+        <Control Id="GhidraLabel" Type="Text" X="25" Y="90" Width="80" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="Ghidra:" />
+        <Control Id="GhidraStatus" Type="Text" X="110" Y="90" Width="200" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="[GHIDRA_STATUS]" />
+        
+        <!-- Dependency Installation Options -->
+        <Control Id="DepsGroupBox" Type="GroupBox" X="25" Y="120" Width="320" Height="80" 
+                 Text="Dependency Installation" />
+        
+        <!-- Install Python Dependencies -->
+        <Control Id="InstallPythonDepsCheck" Type="CheckBox" X="35" Y="140" Width="280" Height="18" 
+                 Property="INSTALL_PYTHON_DEPS" CheckBoxValue="1" 
+                 Text="Install required Python packages (pywin32, psutil, httpx)" />
+        
+        <!-- API Key Configuration -->
+        <Control Id="ApiKeyLabel" Type="Text" X="35" Y="165" Width="100" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="OpenAI API Key:" />
+        <Control Id="ApiKeyEdit" Type="Edit" X="35" Y="180" Width="280" Height="18" 
+                 Property="OPENAI_API_KEY" Text="[OPENAI_API_KEY]" Password="yes" />
+        
+        <!-- Warning Text -->
+        <Control Id="WarningText" Type="Text" X="25" Y="210" Width="320" Height="25" 
+                 Transparent="yes" NoPrefix="yes" 
+                 Text="Note: Missing dependencies can be installed later. The service will start automatically if all requirements are met." />
+        
+        <!-- Navigation Buttons -->
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" 
+                 Text="&amp;Back">
+          <Publish Event="NewDialog" Value="GhidraPathDlg">1</Publish>
+        </Control>
+        
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" 
+                 Default="yes" Text="&amp;Next">
+          <Publish Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+        </Control>
+        
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" 
+                 Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        
+      </Dialog>
+    </UI>
+    
+    <!-- Installation Summary Dialog -->
+    <UI Id="InstallSummaryDialog">
+      <Dialog Id="VerifyReadyDlg" Width="370" Height="270" Title="[ProductName] - Ready to Install">
+        
+        <!-- Title -->
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="300" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Ready to Install" />
+        
+        <!-- Subtitle -->
+        <Control Id="Subtitle" Type="Text" X="25" Y="23" Width="280" Height="15" 
+                 Transparent="yes" NoPrefix="yes" Text="Review your installation settings." />
+        
+        <!-- Installation Summary -->
+        <Control Id="SummaryText" Type="ScrollableText" X="25" Y="45" Width="320" Height="150" 
+                 Sunken="yes" TabSkip="no" 
+                 Text="Installation Directory: [INSTALLDIR]&#13;&#10;Ghidra Path: [GHIDRA_HEADLESS_PATH]&#13;&#10;Auto-start Service: [AUTOSTART_SERVICE_TEXT]&#13;&#10;Configure Firewall: [CONFIGURE_FIREWALL_TEXT]&#13;&#10;Install Python Dependencies: [INSTALL_PYTHON_DEPS_TEXT]&#13;&#10;&#13;&#10;The installer will:&#13;&#10;• Install MCP Ghidra5 Windows service&#13;&#10;• Configure Windows registry settings&#13;&#10;• Create Start Menu shortcuts&#13;&#10;• Set up service configuration&#13;&#10;• Install Python dependencies (if selected)&#13;&#10;• Configure Windows Firewall (if selected)" />
+        
+        <!-- Warning for Enterprise -->
+        <Control Id="EnterpriseWarning" Type="Text" X="25" Y="200" Width="320" Height="30" 
+                 Transparent="yes" NoPrefix="yes" 
+                 Text="Note: This installation requires administrator privileges and will install a Windows service that starts automatically with the system." />
+        
+        <!-- Navigation Buttons -->
+        <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" 
+                 Text="&amp;Back">
+          <Publish Event="NewDialog" Value="DependencyCheckDlg">1</Publish>
+        </Control>
+        
+        <Control Id="Install" Type="PushButton" X="236" Y="243" Width="56" Height="17" 
+                 Default="yes" Text="&amp;Install">
+          <Publish Event="EndDialog" Value="Return">1</Publish>
+        </Control>
+        
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" 
+                 Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        
+      </Dialog>
+    </UI>
+    
+    <!-- Custom UI Sequence -->
+    <UI Id="MCPGhidra5InstallUI">
+      <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
+      <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
+      <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" />
+      
+      <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+      <Property Id="WixUI_Mode" Value="FeatureTree" />
+      
+      <!-- Dialog References -->
+      <DialogRef Id="ErrorDlg" />
+      <DialogRef Id="FatalError" />
+      <DialogRef Id="FilesInUse" />
+      <DialogRef Id="MsiRMFilesInUse" />
+      <DialogRef Id="PrepareDlg" />
+      <DialogRef Id="ProgressDlg" />
+      <DialogRef Id="ResumeDlg" />
+      <DialogRef Id="UserExit" />
+      <DialogRef Id="WelcomeDlg" />
+      <DialogRef Id="LicenseAgreementDlg" />
+      <DialogRef Id="CustomizeDlg" />
+      <DialogRef Id="GhidraPathDlg" />
+      <DialogRef Id="DependencyCheckDlg" />
+      <DialogRef Id="VerifyReadyDlg" />
+      
+      <!-- UI Flow -->
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="LicenseAgreementDlg">NOT Installed</Publish>
+      <Publish Dialog="LicenseAgreementDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg">1</Publish>
+      <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="GhidraPathDlg">LicenseAccepted = "1"</Publish>
+      
+      <!-- Custom Actions for Status Updates -->
+      <Property Id="PYTHON_STATUS" Value="Checking..." />
+      <Property Id="JAVA_STATUS" Value="Checking..." />
+      <Property Id="GHIDRA_STATUS" Value="Checking..." />
+      
+      <!-- Text Representations for Checkboxes -->
+      <Property Id="AUTOSTART_SERVICE_TEXT">
+        <![CDATA[AUTOSTART_SERVICE = "1"]]>Yes</Property>
+      <Property Id="CONFIGURE_FIREWALL_TEXT">
+        <![CDATA[CONFIGURE_FIREWALL = "1"]]>Yes</Property>
+      <Property Id="INSTALL_PYTHON_DEPS_TEXT">
+        <![CDATA[INSTALL_PYTHON_DEPS = "1"]]>Yes</Property>
+    </UI>
+    
+    <!-- Custom Actions for Dependency Checking -->
+    <CustomAction Id="CheckPythonInstallation" 
+                  BinaryKey="MCPGhidraCustomActions"
+                  DllEntry="CheckPython" 
+                  Execute="immediate" />
+    
+    <CustomAction Id="CheckJavaInstallation" 
+                  BinaryKey="MCPGhidraCustomActions"
+                  DllEntry="CheckJava" 
+                  Execute="immediate" />
+    
+    <CustomAction Id="CheckGhidraInstallation" 
+                  BinaryKey="MCPGhidraCustomActions"
+                  DllEntry="CheckGhidra" 
+                  Execute="immediate" />
+    
+    <!-- UI Execute Sequence -->
+    <InstallUISequence>
+      <Custom Action="CheckPythonInstallation" Before="ExecuteAction">NOT Installed</Custom>
+      <Custom Action="CheckJavaInstallation" Before="ExecuteAction">NOT Installed</Custom>
+      <Custom Action="CheckGhidraInstallation" Before="ExecuteAction">NOT Installed</Custom>
+    </InstallUISequence>
+    
+  </Fragment>
+</Wix>

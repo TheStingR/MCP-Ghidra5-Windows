@@ -1,0 +1,132 @@
+# Docker Compose configuration for MCP-Ghidra5 Windows Testing Environment
+#
+# This compose file sets up a Windows Server Core container for comprehensive
+# testing of the MCP-Ghidra5 Windows installer and service functionality.
+#
+# Usage:
+#   docker-compose up --build
+#   docker-compose run --rm mcp-ghidra5-test-windows powershell
+#
+# Requirements:
+#   - Docker Desktop with Windows containers enabled
+#   - Windows Server Core base image support
+#   - At least 8GB RAM and 20GB disk space
+
+version: '3.8'
+
+services:
+  mcp-ghidra5-test-windows:
+    container_name: mcp-ghidra5-windows-tester
+    hostname: mcp-test-windows
+    
+    build:
+      context: ../../  # Build from project root
+      dockerfile: tests/windows-docker/Dockerfile
+      args:
+        GHIDRA_VERSION: "11.0"
+        PYTHON_VERSION: "3.11.5"
+        BUILD_DATE: $BUILD_DATE
+    
+    # Resource limits for testing environment
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '4.0'
+        reservations:
+          memory: 4G
+          cpus: '2.0'
+    
+    # Environment variables for testing
+    environment:
+      - GHIDRA_INSTALL_DIR=C:\ghidra_11.0_PUBLIC
+      - GHIDRA_HEADLESS_PATH=C:\ghidra_11.0_PUBLIC\support\analyzeHeadless.bat
+      - MCP_SERVER_HOST=0.0.0.0
+      - MCP_SERVER_PORT=8765
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      - PYTHONIOENCODING=utf-8
+      - COMPUTERNAME=MCP-TEST-WIN
+      - USERDOMAIN=WORKGROUP
+    
+    # Networking configuration
+    ports:
+      - "8765:8765"    # MCP server port
+      - "3389:3389"    # RDP (if enabled)
+    
+    networks:
+      - mcp-test-network
+    
+    # Volume mounts for persistent data and logs
+    volumes:
+      # Persistent storage for logs and test results
+      - mcp-test-logs:C:\ProgramData\MCP-Ghidra5\Logs
+      - mcp-test-projects:C:\ProgramData\MCP-Ghidra5\Projects
+      - mcp-build-output:C:\mcp-ghidra5\build
+      
+      # Optional: Mount local development files for live testing
+      # Uncomment if you want to test local changes without rebuilding
+      # - ./../../src:C:\mcp-ghidra5\src
+      # - ./../../scripts:C:\mcp-ghidra5\scripts
+    
+    # Health check to ensure container is ready for testing
+    healthcheck:
+      test: ["CMD", "powershell", "-Command", "Test-Path C:\\mcp-ghidra5\\src\\mcp_ghidra_server_windows.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Container configuration
+    stop_grace_period: 30s
+    restart: "no"  # Don't auto-restart for testing
+    
+    # Windows-specific settings
+    isolation: process
+    
+    # Default command runs the startup script and drops to PowerShell
+    command: >
+      powershell -NoExit -ExecutionPolicy Bypass -Command "
+      & C:\mcp-ghidra5\tests\windows-docker\start-testing-container.ps1;
+      Write-Host 'Type ''exit'' to stop the container.' -ForegroundColor Yellow;
+      "
+    
+    # Labels for container management
+    labels:
+      - "project=mcp-ghidra5"
+      - "environment=testing"
+      - "platform=windows"
+      - "component=integration-test"
+      - "version=1.0.0"
+      - "maintainer=TechSquad Development"
+
+# Named volumes for persistent data
+volumes:
+  mcp-test-logs:
+    driver: local
+    labels:
+      - "project=mcp-ghidra5"
+      - "type=logs"
+  
+  mcp-test-projects:
+    driver: local
+    labels:
+      - "project=mcp-ghidra5" 
+      - "type=projects"
+  
+  mcp-build-output:
+    driver: local
+    labels:
+      - "project=mcp-ghidra5"
+      - "type=build"
+
+# Network configuration
+networks:
+  mcp-test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    labels:
+      - "project=mcp-ghidra5"
+      - "environment=testing"
